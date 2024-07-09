@@ -1,0 +1,5 @@
+.venv
+.idea
+.ipynb_checkpoints
+NER-manual-check.ipynb
+sample_sentences.txt

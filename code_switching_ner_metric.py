@@ -185,11 +185,11 @@ class CodeSwitchingNERMetric:
                 total_num_tokens += len(tokens_dicts)
 
         output = {
-            "broken_sentences_ratio": num_broken_sentences/total_num_sentences if total_num_sentences else -1.0,
-            "broken_texts_ratio": num_broken_texts/total_num_texts if total_num_texts else -1.0,
+            "codeswitch_sentences_ratio": num_broken_sentences/total_num_sentences if total_num_sentences else -1.0,
+            "codeswitch_texts_ratio": num_broken_texts/total_num_texts if total_num_texts else -1.0,
             "total_num_texts": total_num_texts,
             "total_num_sentences": total_num_sentences,
-            "broken_tokens_ratio": num_broken_tokens/total_num_tokens if total_num_tokens else -1.0,
+            "codeswitch_words_ratio": num_broken_tokens/total_num_tokens if total_num_tokens else -1.0,
             "total_num_tokens": total_num_tokens
         }
         return output

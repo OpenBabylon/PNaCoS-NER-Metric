@@ -54,19 +54,19 @@ Example output:
 
 ```python
 {
-   "broken_sentences_ratio": 0.25, 
-   "broken_texts_ratio": 0.3333333333333333,
+   "codeswitch_sentences_ratio": 0.25, 
+   "codeswitch_texts_ratio": 0.3333333333333333,
    "total_num_texts": 3, 
    "total_num_sentences": 4, 
-   "broken_tokens_ratio": 0.23809523809523808, 
+   "codeswitch_words_ratio": 0.23809523809523808, 
    "total_num_tokens": 21
 }
 
 ```
 Output fields:
-* broken_sentences_ratio: float from 0 to 1, ratio in % of the sentences that the code switching was detected. If no text were provided, will be set to -1.0
-* broken_texts_ratio: float from 0 to 1, ratio in % of the texts that the code switching was detected. If no text were provided, will be set to -1.0
-* broken_tokens_ratio: float from 0 to 1, ratio in % of the tokens (by stanza tokenization) that the code switching was detected. If no text were provided, will be set to -1.0
+* codeswitch_sentences_ratio: float from 0 to 1, ratio in % of the sentences that the code switching was detected. If no text were provided, will be set to -1.0
+* codeswitch_texts_ratio: float from 0 to 1, ratio in % of the texts that the code switching was detected. If no text were provided, will be set to -1.0
+* codeswitch_words_ratio: float from 0 to 1, ratio in % of the tokens (by stanza tokenization) that the code switching was detected. If no text were provided, will be set to -1.0
 
 ## Run in Code
 To run the metric in your code, use the following snippet:
@@ -84,7 +84,7 @@ my_texts = [
 
 preds_dict = metric.calculate(texts=my_texts)
 print(preds_dict)
-# {'broken_sentences_ratio': 0.25, 'broken_texts_ratio': 0.3333333333333333, 'total_num_texts': 3, 'total_num_sentences': 4, 'broken_tokens_ratio': 0.23809523809523808, 'total_num_tokens': 21}
+# {'codeswitch_sentences_ratio': 0.25, 'codeswitch_texts_ratio': 0.3333333333333333, 'total_num_texts': 3, 'total_num_sentences': 4, 'codeswitch_words_ratio': 0.23809523809523808, 'total_num_tokens': 21}
 ```
 
 ## Customize

@@ -8,15 +8,16 @@ from typing import List, Union, Dict, Tuple
 
 class BaseNER:
 
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
         return []
 
     def pred_ner_sents(self, text: str) -> Tuple[
         List[List[Dict[str, Union[int, str]]]],
         List[str],
+        List[Dict[str, int]],
         List[Dict[str, Union[str, int]]]
     ]:
-        return [], [], []
+        return [], [], [], []
 
 class TransformersNER(BaseNER):
     def __init__(self,
@@ -35,17 +36,19 @@ class TransformersNER(BaseNER):
                             aggregation_strategy="simple"
                             )
 
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
         preds = self.ppl(sentences)
 
         output = []
-        for pred_dicts in preds:
+        for sentence_idx_range, pred_dicts in zip(sentences_ranges, preds):
             output.append(
                 [
                     {
                         "text": pred['word'],
-                        "start": pred["start"],
-                        "end": pred["end"],
+                        "start_in_sentence": pred["start"],
+                        "end_in_sentence": pred["end"],
+                        "start": pred["start"] + sentence_idx_range["start"],
+                        "end": pred["end"] + sentence_idx_range["start"],
                         "label": pred["entity_group"]
                     } for pred in pred_dicts if pred["entity_group"] in self.consider_labels
                 ]
@@ -65,9 +68,9 @@ class SpacyNER(BaseNER):
         self.nlp = spacy.load(modelname)
         self.consider_labels = consider_labels
 
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
         preds = []
-        for sentence in sentences:
+        for sentence, sentence_idx_range in zip(sentences, sentences_ranges):
             doc = self.nlp(sentence)
             doc_ents = []
             for ent in doc.ents:
@@ -76,8 +79,10 @@ class SpacyNER(BaseNER):
                         {
                             "text": ent.text,
                             "label": ent.label_,
-                            "start": ent.start_char,
-                            "end": ent.end_char
+                            "start_in_sentence": ent.start_char,
+                            "end_in_sentence": ent.end_char,
+                            "start": ent.start_char + sentence_idx_range["start"],
+                            "end": ent.end_char + sentence_idx_range["start"],
                         }
                     )
             preds.append(doc_ents)
@@ -113,15 +118,18 @@ class StanzaNER(BaseNER):
     def pred_ner_sents(self, text: str) -> Tuple[
         List[List[Dict[str, Union[int, str]]]],
         List[str],
+        List[Dict[str, int]],
         List[Dict[str, Union[str, int]]]
     ]:
         doc = self.nlp(text)
 
         sentences = []
+        sentences_ranges = []
         preds = []
         tokens = []
 
         for sent in doc.sentences:
+            sentences_ranges.append({"start": sent.tokens[0].start_char, "end": sent.tokens[-1].end_char})
             sentences.append(sent.text)
             sent_preds = []
             for ent in sent.ents:
@@ -131,6 +139,8 @@ class StanzaNER(BaseNER):
                         "label": ent.type,
                         "start": ent.start_char,
                         "end": ent.end_char,
+                        "start_in_sentence": sent.text.index(ent.text),
+                        "end_in_sentence": sent.text.index(ent.text) + len(ent.text)
                     }
                 )
             preds.append(sent_preds)
@@ -145,48 +155,35 @@ class StanzaNER(BaseNER):
                 )
 
 
-        return preds, sentences, tokens
+        return preds, sentences, sentences_ranges, tokens
 
 
 
 
-class RegexQuotesFinder(BaseNER):
-    def __init__(self):
-        pass
 
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
+class RegexFinder:
+    def __init__(self, pattern: str, labelname: str):
+        self.pattern = pattern
+        self.labelname = labelname
+
+    def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
         output = []
 
-        for sentence in sentences:
-            urls = re.findall(r"([\'\"\`])(.*)\1", sentence)
-            output.append(
-                [
-                    {
-                        "text": url,
-                        "label": "Quote",
-                        "start": sentence.index(url),
-                        "end": sentence.index(url) + len(url)
-                    } for url in urls
-                ]
-            )
+        for sentence, sentence_idx_range in zip(sentences, sentences_ranges):
+            matches = [
+                (match.group(), match.start(), match.end()) for match in
+                re.finditer(self.pattern, sentence) if match.group()]
+            for match_text, match_start, match_end in matches:
+                output.append(
+                    [
+                        {
+                            "text": match_text,
+                            "label": self.labelname,
+                            "start_in_sentence": match_start,
+                            "end_in_sentence": match_end,
+                            "start": match_start + sentence_idx_range["start"],
+                            "end": match_end + sentence_idx_range["start"],
+                        }
+                    ]
+                )
         return output
-
-class RegexURLFinder(BaseNER):
-    def __init__(self):
-        pass
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
-        output = []
-        for sentence in sentences:
-            urls = re.findall('https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+', sentence)
-            output.append(
-                [
-                    {
-                        "text": url,
-                        "label": "URL",
-                        "start": sentence.index(url),
-                        "end": sentence.index(url) + len(url)
-                    } for url in urls
-                ]
-            )
-        return output
-

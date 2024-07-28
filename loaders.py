@@ -28,8 +28,18 @@ def load_metric() -> CodeSwitchingNERMetric:
             ],
             modelname="uk_core_news_lg"
         ),
-        RegexURLFinder(),
-        RegexQuotesFinder()
+        RegexFinder(
+            pattern=r"([\'\"\`])(.*)\1",
+            labelname="Quote"
+        ),
+        RegexFinder(
+            pattern='https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+',
+            labelname="URL"
+        ),
+        RegexFinder(
+            pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
+            labelname='RomanInteger'
+        )
     ]
     sentence_ner = StanzaNER(
         ppl_lang='uk',

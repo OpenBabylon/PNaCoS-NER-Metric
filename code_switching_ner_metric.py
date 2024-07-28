@@ -1,5 +1,5 @@
 from ner_utils import BaseNER
-from typing import List, Dict, Union, Tuple
+from typing import List, Dict, Union, Tuple, Any
 from preprocessing import Preprocessor
 import re
 
@@ -16,21 +16,22 @@ class CodeSwitchingNERMetric:
     def get_all_ner_preds_sentences(self, text: str) -> Tuple[
         List[List[Dict[str, Union[int, str]]]],
         List[str],
+        List[Dict[str, int]],
         List[Dict[str, Union[str, int]]]
     ]:
         """get NER predictions, sentences and token separation from the  self.sentence_ner;
         Get all predictions per sentence from the NER modules in self.ner_modules"""
 
-        ner_preds, sentences, tokens_dicts = self.sentence_ner.pred_ner_sents(text)
+        ner_preds, sentences, sentences_ranges, tokens_dicts = self.sentence_ner.pred_ner_sents(text)
 
         for ner_model in self.ner_modules:
-            model_preds = ner_model(sentences)
+            model_preds = ner_model(sentences, sentences_ranges)
 
             for i in range(len(model_preds)):
                 ner_preds[i] += model_preds[i]
 
 
-        return ner_preds, sentences, tokens_dicts
+        return ner_preds, sentences, sentences_ranges, tokens_dicts
 
     def mergeIntervals(self, intervals):
         """merge overlapping intervals"""
@@ -52,7 +53,7 @@ class CodeSwitchingNERMetric:
 
 
     def merge_preds(self,
-                    sentence: str,
+                    text: str,
                     preds: List[Dict[str, Union[int, str]]]) -> List[Dict[str, Union[int, str]]]:
         """Merge overlapping ner predictions"""
 
@@ -69,7 +70,7 @@ class CodeSwitchingNERMetric:
             {
                 "start": start,
                 "end": end,
-                "text": sentence[start: end],
+                "text": text[start: end],
             } for start, end in merged_intervals
         ]
         return merged_preds
@@ -89,42 +90,42 @@ class CodeSwitchingNERMetric:
         return [(m.start(), m.end()) for m in matches]
 
 
-    def is_proper_name(self, substring_start: int, substing_end: int, ner_preds: List[Dict[str, Union[int, str]]]) -> bool:
+    def is_proper_name(self, substring_start: int, substing_end: int,
+                       ner_preds: List[Dict[str, Union[int, str]]],
+                       offset=0) -> bool:
         """Check if the provided interval intersect with any of the extracted entities"""
         for pred in ner_preds:
-            if not (substing_end < pred["start"] or substring_start > pred["end"]):
+            if self.is_intersection(
+                    start_1=substring_start, end_1=substing_end,
+                    start_2=pred["start"] + offset, end_2=pred["end"] + offset
+            ):
+            # if not (substing_end < pred["start"] + offset or substring_start > pred["end"] + offset):
                 return True
 
         return False
 
+    def is_intersection(self, start_1,end_1, start_2, end_2 ) -> bool:
+        return not (end_1 < start_2 or start_1 > end_2)
 
-    def calc_sentences_num_broken(self, sentences, merged_ner_preds) -> int:
+
+    def calc_sentences_num_broken(self, broken_tokens_dicts, sentences_ranges) -> int:
         """calculate number of broken sentences"""
         num_broken_sentences = 0
-
-        for sentence, sentence_ner_preds in zip(sentences, merged_ner_preds):
-
-            # all unexpected alphabet symbols
-            sentence_foreign_substrings_ranges = self.find_non_vocab_words_starts(text=sentence)
-
-            non_proper_names_substrings_ranges = [
-                (foreign_substring_start, foreign_substring_end)
-                for foreign_substring_start, foreign_substring_end in sentence_foreign_substrings_ranges
-                if not self.is_proper_name(
-                    substring_start=foreign_substring_start,
-                    substing_end=foreign_substring_start,
-                    ner_preds=sentence_ner_preds
-                )
-            ]
-
-            if len(non_proper_names_substrings_ranges):
-                num_broken_sentences += 1
+        for sentence_range_idx_dict in sentences_ranges:
+            for broken_token_dict in broken_tokens_dicts:
+                if self.is_intersection(
+                        start_1=sentence_range_idx_dict["start"],
+                        end_1=sentence_range_idx_dict["end"],
+                        start_2=broken_token_dict["start"],
+                        end_2=broken_token_dict["end"],
+                ):
+                    num_broken_sentences += 1
+                    break
 
         return num_broken_sentences
 
 
-
-    def calc_token_level_num_broken(self, tokens: List[Dict[str, Union[str, int]]], merged_ner_preds) -> Tuple[int, List[str]]:
+    def calc_token_level_num_broken(self, tokens: List[Dict[str, Union[str, int]]], merged_ner_preds) -> Tuple[int, Dict[str, Any]]:
         num_broken = 0
         broken_tokens = []
 
@@ -138,7 +139,7 @@ class CodeSwitchingNERMetric:
                                     ner_preds=all_ner_preds
                             ):
                     num_broken += 1
-                    broken_tokens.append(token_dict["text"])
+                    broken_tokens.append(token_dict)
 
         return num_broken, broken_tokens
 
@@ -154,35 +155,35 @@ class CodeSwitchingNERMetric:
             text = Preprocessor.preprocess(text=raw_text)
 
             if text:
-                sentence_ner_preds, sentences, tokens_dicts = self.get_all_ner_preds_sentences(text=text)
+                sentence_ner_preds, sentences, sentences_ranges, tokens_dicts = self.get_all_ner_preds_sentences(text=text)
                 merged_ner_preds = [
                     self.merge_preds(
-                        sentence=sentences[i],
+                        text=text,
                         preds=sentence_ner_preds[i]
                     ) for i in range(len(sentence_ner_preds))
                 ]
 
-
-                # calculate number of broken sentences
-                text_num_broken_sentences = self.calc_sentences_num_broken(
-                    sentences=sentences,
-                    merged_ner_preds=merged_ner_preds
-                )
-                if text_num_broken_sentences:
-                    num_broken_texts += 1
-                num_broken_sentences += text_num_broken_sentences
                 total_num_sentences += len(sentences)
 
                 # calculate number of broken tokens
-                text_num_broken_words, broken_tokens = self.calc_token_level_num_broken(
+                text_num_broken_words, broken_tokens_dicts = self.calc_token_level_num_broken(
                     tokens=tokens_dicts,
                     merged_ner_preds=merged_ner_preds
                 )
 
-                # print(broken_tokens)
+                if text_num_broken_words:
+                    num_broken_texts += 1
+
+                text_num_broken_sentences = self.calc_sentences_num_broken(
+                    broken_tokens_dicts=broken_tokens_dicts,
+                    sentences_ranges=sentences_ranges
+                )
 
                 num_broken_tokens += text_num_broken_words
                 total_num_tokens += len(tokens_dicts)
+                num_broken_sentences += text_num_broken_sentences
+
+
 
         output = {
             "codeswitch_sentences_ratio": num_broken_sentences/total_num_sentences if total_num_sentences else -1.0,
@@ -200,15 +201,23 @@ if __name__ == '__main__':
     ner_modules = [
         TransformersNER(),
         SpacyNER(),
-        RegexURLFinder(),
-        RegexQuotesFinder()
+        RegexFinder(
+            pattern=r"([\'\"\`])(.*)\1",
+            labelname="Quote"
+        ),
+        RegexFinder(
+            pattern='https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+',
+            labelname="URL"
+        ),
+        RegexFinder(
+            pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
+            labelname='RomanInteger'
+        )
     ]
     sentence_ner = StanzaNER()
 
     test_texts = [
-        "Все нормально. Мабуть.",
-        "Кручу верчу метрику рахую",
-        "єєєєZAZ-1103 Slavuta це є the best автомобіль in the світі"
+        "Кручу верчу metric рахую"
     ]
 
     metric = CodeSwitchingNERMetric(ner_modules=ner_modules, sentence_ner=sentence_ner)

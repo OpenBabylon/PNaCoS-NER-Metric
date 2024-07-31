@@ -167,23 +167,25 @@ class RegexFinder:
         self.labelname = labelname
 
     def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
-        output = []
+        output = [
+            [] for _ in sentences
+        ]
 
-        for sentence, sentence_idx_range in zip(sentences, sentences_ranges):
+        for i, (sentence, sentence_idx_range) in enumerate(zip(sentences, sentences_ranges)):
             matches = [
                 (match.group(), match.start(), match.end()) for match in
                 re.finditer(self.pattern, sentence) if match.group()]
+
             for match_text, match_start, match_end in matches:
-                output.append(
-                    [
-                        {
-                            "text": match_text,
-                            "label": self.labelname,
-                            "start_in_sentence": match_start,
-                            "end_in_sentence": match_end,
-                            "start": match_start + sentence_idx_range["start"],
-                            "end": match_end + sentence_idx_range["start"],
-                        }
-                    ]
-                )
+                output[i] += [
+                    {
+                        "text": match_text,
+                        "label": self.labelname,
+                        "start_in_sentence": match_start,
+                        "end_in_sentence": match_end,
+                        "start": match_start + sentence_idx_range["start"],
+                        "end": match_end + sentence_idx_range["start"],
+                    }
+                ]
+
         return output

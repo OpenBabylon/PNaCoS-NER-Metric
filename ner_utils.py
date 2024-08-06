@@ -8,7 +8,7 @@ from typing import List, Union, Dict, Tuple
 
 class BaseNER:
 
-    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         return []
 
     def pred_ner_sents(self, text: str) -> Tuple[
@@ -36,7 +36,7 @@ class TransformersNER(BaseNER):
                             aggregation_strategy="simple"
                             )
 
-    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         preds = self.ppl(sentences)
 
         output = []
@@ -68,7 +68,7 @@ class SpacyNER(BaseNER):
         self.nlp = spacy.load(modelname)
         self.consider_labels = consider_labels
 
-    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         preds = []
         for sentence, sentence_idx_range in zip(sentences, sentences_ranges):
             doc = self.nlp(sentence)
@@ -99,7 +99,7 @@ class StanzaNER(BaseNER):
                  ):
         self.nlp = stanza.Pipeline(lang=ppl_lang, processors='tokenize,ner')
         self.consider_labels = consider_labels
-    def __call__(self, sentences: List[str]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         preds = []
         for sentence in sentences:
             doc = self.nlp(sentence)
@@ -166,7 +166,7 @@ class RegexFinder:
         self.pattern = pattern
         self.labelname = labelname
 
-    def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]]) -> List[List[Dict[str, Union[int, str]]]]:
+    def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         output = [
             [] for _ in sentences
         ]
@@ -189,3 +189,30 @@ class RegexFinder:
                 ]
 
         return output
+
+class CorpusCommonTokensFinder(BaseNER):
+    def __init__(self, comon_tokens_list: List[str]):
+        self.comon_tokens_list = comon_tokens_list
+
+    def __call__(self, tokens_dicts, sentences_ranges, **kwargs):
+        preds = []
+
+        for sentence_range in sentences_ranges:
+            sent_preds = []
+
+            for token_dict in tokens_dicts:
+                if token_dict["start"] >= sentence_range["start"] and token_dict["end"] <= sentence_range["end"]:
+                    if token_dict["text"].lower() in self.comon_tokens_list:
+                        sent_preds.append(
+                            {
+                                "text": token_dict["text"],
+                                "label": "CorpusCommonTokens",
+                                "start": token_dict["start"],
+                                "end": token_dict["end"]
+                            }
+                        )
+                else:
+                    break
+            preds.append(sent_preds)
+
+        return preds

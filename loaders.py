@@ -1,6 +1,6 @@
 from ner_utils import *
 from code_switching_ner_metric import CodeSwitchingNERMetric
-
+import json
 
 
 
@@ -39,6 +39,11 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
             labelname='RomanInteger'
+        ),
+        CorpusCommonTokensFinder(
+            comon_tokens_list=json.load(
+                open("ukr_corpus_words.json", "r")
+            )
         )
     ]
     sentence_ner = StanzaNER(

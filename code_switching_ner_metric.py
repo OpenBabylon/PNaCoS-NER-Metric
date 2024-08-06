@@ -25,7 +25,11 @@ class CodeSwitchingNERMetric:
         ner_preds, sentences, sentences_ranges, tokens_dicts = self.sentence_ner.pred_ner_sents(text)
 
         for ner_model in self.ner_modules:
-            model_preds = ner_model(sentences, sentences_ranges)
+            model_preds = ner_model(
+                sentences=sentences,
+                sentences_ranges=sentences_ranges,
+                tokens_dicts=tokens_dicts
+            )
 
             for i in range(len(model_preds)):
                 ner_preds[i] += model_preds[i]
@@ -196,30 +200,14 @@ class CodeSwitchingNERMetric:
         return output
 
 if __name__ == '__main__':
-    from ner_utils import *
-
-    ner_modules = [
-        TransformersNER(),
-        SpacyNER(),
-        RegexFinder(
-            pattern=r"([\'\"\`])(.*)\1",
-            labelname="Quote"
-        ),
-        RegexFinder(
-            pattern='https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+',
-            labelname="URL"
-        ),
-        RegexFinder(
-            pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
-            labelname='RomanInteger'
-        )
-    ]
-    sentence_ner = StanzaNER()
+    from loaders import load_metric
 
     test_texts = [
-        "Кручу верчу metric рахую"
+        "Кручу верчу metric рахую sms",
+        "Кручу верчу рахую",
+        ""
     ]
 
-    metric = CodeSwitchingNERMetric(ner_modules=ner_modules, sentence_ner=sentence_ner)
+    metric = load_metric()
 
     print(metric.calculate(texts=test_texts))

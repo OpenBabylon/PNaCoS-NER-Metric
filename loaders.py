@@ -49,6 +49,13 @@ def load_metric() -> CodeSwitchingNERMetric:
             comon_tokens_list=json.load(
                 open("FDA-parsed-additives.json", "r")
             )
+        ),
+        InclusionSymbols(
+            inclusion_symbols_list=[s.strip() for s in open("math_symbols.txt", "r").read().split("\n") if s]
+        ),
+        RegexFinder(
+            pattern=r'[⁰¹²³⁴⁵⁶⁷⁸⁹]',
+            labelname="MathPower"
         )
     ]
     sentence_ner = StanzaNER(

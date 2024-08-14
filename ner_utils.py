@@ -190,6 +190,32 @@ class RegexFinder:
 
         return output
 
+class InclusionSymbols(BaseNER):
+    def __init__(self, inclusion_symbols_list: List[str]):
+        self.inclusion_symbols_list = inclusion_symbols_list
+        self.incl_patter = "|".join(self.inclusion_symbols_list)
+        self.incl_patter = "^[" + self.incl_patter + "].*"
+
+    def __call__(self, tokens_dicts, sentences_ranges, **kwargs):
+        preds = []
+
+        for sentence_range in sentences_ranges:
+            sent_preds = []
+
+            for token_dict in tokens_dicts:
+                if token_dict["start"] >= sentence_range["start"] and token_dict["end"] <= sentence_range["end"]:
+                    if re.match(self.incl_patter, token_dict["text"]):
+                        sent_preds.append(
+                            {
+                                "text": token_dict["text"],
+                                "label": "CorpusCommonTokens",
+                                "start": token_dict["start"],
+                                "end": token_dict["end"]
+                            }
+                        )
+            preds.append(sent_preds)
+
+        return preds
 class CorpusCommonTokensFinder(BaseNER):
     def __init__(self, comon_tokens_list: List[str]):
         self.comon_tokens_list = comon_tokens_list
@@ -202,7 +228,7 @@ class CorpusCommonTokensFinder(BaseNER):
 
             for token_dict in tokens_dicts:
                 if token_dict["start"] >= sentence_range["start"] and token_dict["end"] <= sentence_range["end"]:
-                    if token_dict["text"].lower() in self.comon_tokens_list:
+                    if token_dict["text"] in self.comon_tokens_list or token_dict["text"].lower() in self.comon_tokens_list:
                         sent_preds.append(
                             {
                                 "text": token_dict["text"],
@@ -211,8 +237,6 @@ class CorpusCommonTokensFinder(BaseNER):
                                 "end": token_dict["end"]
                             }
                         )
-                else:
-                    break
             preds.append(sent_preds)
 
         return preds

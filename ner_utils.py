@@ -194,7 +194,7 @@ class InclusionSymbols(BaseNER):
     def __init__(self, inclusion_symbols_list: List[str]):
         self.inclusion_symbols_list = inclusion_symbols_list
         self.incl_patter = "|".join(self.inclusion_symbols_list)
-        self.incl_patter = "^[" + self.incl_patter + "].*"
+        self.incl_patter = ".*[" + self.incl_patter + "].*"
 
     def __call__(self, tokens_dicts, sentences_ranges, **kwargs):
         preds = []

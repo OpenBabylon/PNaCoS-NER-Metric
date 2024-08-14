@@ -44,6 +44,11 @@ def load_metric() -> CodeSwitchingNERMetric:
             comon_tokens_list=json.load(
                 open("ukr_corpus_words.json", "r")
             )
+        ),
+        CorpusCommonTokensFinder(
+            comon_tokens_list=json.load(
+                open("FDA-parsed-additives.json", "r")
+            )
         )
     ]
     sentence_ner = StanzaNER(

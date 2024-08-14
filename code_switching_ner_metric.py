@@ -203,9 +203,7 @@ if __name__ == '__main__':
     from loaders import load_metric
 
     test_texts = [
-        "Кручу верчу metric рахую sms",
-        "Кручу верчу рахую",
-        ""
+        "У аспірині (або як кажуть іноземною мовою: aspirin), мабуть, немає вітаміну B12, але я звідки знаю, я ж не лікар"
     ]
 
     metric = load_metric()

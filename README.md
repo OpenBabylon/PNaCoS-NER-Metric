@@ -133,3 +133,8 @@ Algorithm:
    * broken_tokens_ratio: (number of broken tokens)/(total number of tokens)
    * broken_texts_ratio: (number of broken texts)/(total number of texts)
    * broken_sentences_ratio: (number of broken sentences)/(total number of sentences)
+
+### Corpuses refs.
+Adam Kilgarriff, Siva Reddy, Jan Pomikálek, and Avinesh PVS. A corpus factory for many languages. In LREC workshop on Web Services and Processing Pipelines, Malta, May 2010.
+GNC Modern Georgian :: Concordance from 
+http://gnc.gov.ge/gnc/corpus-list?session-id=257740279577879

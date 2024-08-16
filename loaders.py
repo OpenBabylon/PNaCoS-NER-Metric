@@ -17,16 +17,9 @@ def load_metric() -> CodeSwitchingNERMetric:
     """
 
     ner_modules = [
-        TransformersNER(
+        FlairNER(
             consider_labels=["MISC", "PER", "ORG", "LOC"],
-            modelname="EvanD/xlm-roberta-base-ukrainian-ner-ukrner"
-        ),
-        SpacyNER(
-            consider_labels=[
-                "ORG", "PER", "MISC", "LOC", "PERSON",
-                "LOCATION", "GPE"
-            ],
-            modelname="uk_core_news_lg"
+            modelname="stefan-it/autotrain-flair-georgian-ner-xlm_r_large-bs4-e10-lr5e-06-1"
         ),
         RegexFinder(
             pattern=r"([\'\"\`])(.*)\1",
@@ -41,9 +34,7 @@ def load_metric() -> CodeSwitchingNERMetric:
             labelname='RomanInteger'
         ),
         CorpusCommonTokensFinder(
-            comon_tokens_list=json.load(
-                open("ukr_corpus_words.json", "r")
-            )
+            comon_tokens_list=json.load(open("georgian_parsed_foreign_words.json", "r"))
         ),
         CorpusCommonTokensFinder(
             comon_tokens_list=json.load(
@@ -58,16 +49,17 @@ def load_metric() -> CodeSwitchingNERMetric:
             labelname="MathPower"
         )
     ]
-    sentence_ner = StanzaNER(
-        ppl_lang='uk',
+
+    sentence_ner = SpacyNER(
         consider_labels = [
-            "ORG", "PERS", "MISC", "LOC",
-            "PERSON", "PER", "JOB", "DOC", "ART"
-        ]
+        "ORG", "PER", "MISC", "LOC", "PERSON",
+        "LOCATION", "GPE"
+    ],
+    modelname="xx_sent_ud_sm"
     )
 
     metric = CodeSwitchingNERMetric(
-        origin_alphabet="АаБбВвГгҐґДдЕеЄєЖжЗзИиІіЇїЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщьЮюЯя",
+        origin_alphabet="ႠႡႢႣႤႥႦႧႨႩႪႫႬႭႮႯႰႱႲႳႴႵႶႷႸႹႺႻႼႽႾႿჀჁჂჃჄჅაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ",
         ner_modules=ner_modules,
         sentence_ner=sentence_ner
     )

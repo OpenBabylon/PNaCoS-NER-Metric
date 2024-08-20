@@ -17,10 +17,26 @@ def load_metric() -> CodeSwitchingNERMetric:
     """
 
     ner_modules = [
-        # FlairNER(
-        #     consider_labels=["MISC", "PER", "ORG", "LOC"],
-        #     modelname="stefan-it/autotrain-flair-georgian-ner-xlm_r_large-bs4-e10-lr5e-06-1"
-        # ),
+        FlairNER(
+            consider_labels=["MISC", "PER", "ORG", "LOC"],
+            modelname="megantosh/flair-arabic-multi-ner"
+        ),
+        TransformersNER(
+            modelname="ychenNLP/arabic-ner-ace",
+            consider_labels=[
+                     "MISC", "PER", "ORG", "LOC", "GPE"
+                 ]
+        ),
+        TransformersNER(
+            modelname='CAMeL-Lab/bert-base-arabic-camelbert-mix-ner',
+            consider_labels=[
+                "B-MISC", "I-MISC",
+                "B-PER", "I-PER",
+                "B-ORG", "I-ORG",
+                "I-LOC", "B-LOC",
+                "I-GPE", "B-GPE"
+            ]
+        ),
         RegexFinder(
             pattern=r"([\'\"\`])(.*)\1",
             labelname="Quote"
@@ -47,21 +63,52 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern=r'[⁰¹²³⁴⁵⁶⁷⁸⁹]',
             labelname="MathPower"
-        )
+        ),
+        SpacyNER()
     ]
 
-    sentence_ner = NLTKSentenceSplitter()
+    sentence_ner = StanzaNER(ppl_lang="ar")
 
-    # sentence_ner = SpacyNER(
-    #     consider_labels = [
-    #     "ORG", "PER", "MISC", "LOC", "PERSON",
-    #     "LOCATION", "GPE"
-    # ],
-    # modelname="xx_sent_ud_sm"
-    # )
+    arabic_alphabet = "ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي ء".replace(" ", "")
+    arabic_letters = [
+        'ا', 'أ', 'إ', 'آ', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض',
+        'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي', 'ء', 'ؤ', 'ئ'
+    ]
+    arabic_alphabet += "".join(arabic_letters)
+
+    isolated_forms = [
+        'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ',
+        'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
+    ]
+    arabic_alphabet += "".join(isolated_forms)
+
+    initial_forms = [
+        'ﺍ', 'ﺑ', 'ﺗ', 'ﺛ', 'ﺟ', 'ﺣ', 'ﺧ', 'ﺩ', 'ﺫ', 'ﺭ', 'ﺯ', 'ﺳ', 'ﺷ', 'ﺻ', 'ﺿ', 'ﻃ', 'ﻇ',
+        'ﻋ', 'ﻏ', 'ﻓ', 'ﻗ', 'ﻛ', 'ﻟ', 'ﻣ', 'ﻧ', 'ﻫ', 'ﻭ', 'ﻳ'
+    ]
+    arabic_alphabet += "".join(initial_forms)
+
+    medial_forms = [
+        'ﺎ', 'ﺒ', 'ﺘ', 'ﺜ', 'ﺠ', 'ﺤ', 'ﺨ', 'ﺪ', 'ﺬ', 'ﺮ', 'ﺰ', 'ﺴ', 'ﺸ', 'ﺼ', 'ﻀ', 'ﻄ', 'ﻈ',
+        'ﻌ', 'ﻐ', 'ﻔ', 'ﻘ', 'ﻜ', 'ﻠ', 'ﻤ', 'ﻨ', 'ﻬ', 'ﻮ', 'ﻴ'
+    ]
+    arabic_alphabet += "".join(medial_forms)
+
+    final_forms = [
+        'ﺍ', 'ﺐ', 'ﺖ', 'ﺚ', 'ﺞ', 'ﺢ', 'ﺦ', 'ﺪ', 'ﺬ', 'ﺮ', 'ﺰ', 'ﺲ', 'ﺶ', 'ﺺ', 'ﻀ', 'ﻂ', 'ﻆ',
+        'ﻊ', 'ﻎ', 'ﻒ', 'ﻖ', 'ﻚ', 'ﻞ', 'ﻢ', 'ﻦ', 'ﻪ', 'ﻮ', 'ﻲ'
+    ]
+    arabic_alphabet += "".join(final_forms)
+
+    # Hamza and other variations
+    hamza_and_variations = [
+        'ء', 'أ', 'إ', 'آ', 'ؤ', 'ئ'
+    ]
+    arabic_alphabet += "".join(hamza_and_variations)
+
 
     metric = CodeSwitchingNERMetric(
-        origin_alphabet="ႠႡႢႣႤႥႦႧႨႩႪႫႬႭႮႯႰႱႲႳႴႵႶႷႸႹႺႻႼႽႾႿჀჁჂჃჄჅაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ",
+        origin_alphabet=arabic_alphabet,
         ner_modules=ner_modules,
         sentence_ner=sentence_ner
     )

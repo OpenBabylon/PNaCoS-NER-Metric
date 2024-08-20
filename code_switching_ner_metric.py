@@ -201,11 +201,18 @@ class CodeSwitchingNERMetric:
 
 if __name__ == '__main__':
     from loaders import load_metric
+    from pprint import pprint
 
     test_texts = [
-        """Anton ცნობილია როგორც საქართველოს ერთ-ერთი უძველესი ქალაქი. 1823 1283 91298y3 1"""
+        """
+
+### ABOUT US
+
+Mamalas is a family business, founded in 2018 by the father and daughter team. Our passion for cheese making and our love of food has been passed on from generation to generation. We started this journey because we wanted to bring traditional Georgian cheesemaking methods back to life using only local milk and natural ingredients that are good for both health and the environment. As well as our traditional recipes, we have also created some new ones to suit modern tastes.
+
+Our mission is to create delicious tasting cheeses while supporting small farmers and preserving rural"""
     ]
 
     metric = load_metric()
 
-    print(metric.calculate(texts=test_texts))
+    pprint(metric.calculate(texts=test_texts))

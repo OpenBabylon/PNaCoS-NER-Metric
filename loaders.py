@@ -17,10 +17,10 @@ def load_metric() -> CodeSwitchingNERMetric:
     """
 
     ner_modules = [
-        FlairNER(
-            consider_labels=["MISC", "PER", "ORG", "LOC"],
-            modelname="stefan-it/autotrain-flair-georgian-ner-xlm_r_large-bs4-e10-lr5e-06-1"
-        ),
+        # FlairNER(
+        #     consider_labels=["MISC", "PER", "ORG", "LOC"],
+        #     modelname="stefan-it/autotrain-flair-georgian-ner-xlm_r_large-bs4-e10-lr5e-06-1"
+        # ),
         RegexFinder(
             pattern=r"([\'\"\`])(.*)\1",
             labelname="Quote"
@@ -33,9 +33,9 @@ def load_metric() -> CodeSwitchingNERMetric:
             pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
             labelname='RomanInteger'
         ),
-        CorpusCommonTokensFinder(
-            comon_tokens_list=json.load(open("georgian_parsed_foreign_words.json", "r"))
-        ),
+        # CorpusCommonTokensFinder(
+        #     comon_tokens_list=json.load(open("georgian_parsed_foreign_words.json", "r"))
+        # ),
         CorpusCommonTokensFinder(
             comon_tokens_list=json.load(
                 open("FDA-parsed-additives.json", "r")
@@ -50,13 +50,15 @@ def load_metric() -> CodeSwitchingNERMetric:
         )
     ]
 
-    sentence_ner = SpacyNER(
-        consider_labels = [
-        "ORG", "PER", "MISC", "LOC", "PERSON",
-        "LOCATION", "GPE"
-    ],
-    modelname="xx_sent_ud_sm"
-    )
+    sentence_ner = NLTKSentenceSplitter()
+
+    # sentence_ner = SpacyNER(
+    #     consider_labels = [
+    #     "ORG", "PER", "MISC", "LOC", "PERSON",
+    #     "LOCATION", "GPE"
+    # ],
+    # modelname="xx_sent_ud_sm"
+    # )
 
     metric = CodeSwitchingNERMetric(
         origin_alphabet="ႠႡႢႣႤႥႦႧႨႩႪႫႬႭႮႯႰႱႲႳႴႵႶႷႸႹႺႻႼႽႾႿჀჁჂჃჄჅაბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ",

@@ -88,8 +88,8 @@ class FlairNER(BaseNER):
 
 
 class NLTKSentenceSplitter(BaseNER):
-    def __init__(self, nltk_lang: str):
-        self.lang = nltk_lang
+    def __init__(self):
+        pass
 
     def pred_ner_sents(self, text: str) -> Tuple[
         List[List[Dict[str, Union[int, str]]]],
@@ -97,7 +97,7 @@ class NLTKSentenceSplitter(BaseNER):
         List[Dict[str, int]],
         List[Dict[str, Union[str, int]]]
     ]:
-        sentences = sent_tokenize(text, language=self.lang)
+        sentences = sent_tokenize(text)
         preds = [[] for _ in sentences]  # No actual entities to append
         sentences_ranges = []
         tokens = []
@@ -334,8 +334,12 @@ class RegexFinder:
 class InclusionSymbols(BaseNER):
     def __init__(self, inclusion_symbols_list: List[str]):
         self.inclusion_symbols_list = inclusion_symbols_list
-        self.incl_patter = "|".join(self.inclusion_symbols_list)
-        self.incl_patter = ".*[" + self.incl_patter + "].*"
+
+    def check_inclusion(self, text):
+        for symbol in self.inclusion_symbols_list:
+            if symbol in text:
+                return True
+        return False
 
     def __call__(self, tokens_dicts, sentences_ranges, **kwargs):
         preds = []
@@ -345,7 +349,7 @@ class InclusionSymbols(BaseNER):
 
             for token_dict in tokens_dicts:
                 if token_dict["start"] >= sentence_range["start"] and token_dict["end"] <= sentence_range["end"]:
-                    if re.match(self.incl_patter, token_dict["text"]):
+                    if self.check_inclusion(token_dict["text"]):
                         sent_preds.append(
                             {
                                 "text": token_dict["text"],

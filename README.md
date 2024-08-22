@@ -1,5 +1,7 @@
 # PNaCoS-NER Metric: Proper Name Code Switching via Named Entity Recognition
 
+<b>Current repository has different branches, depending on the language that the metric is calculated for! The main is for Ukrainian. If you need another language, please switch to a branch which supports it (if it exists). </b>
+
 This repository contains code for the PNaCoS-NER Metric: Proper Name Code Switching via Named Entity Recognition. For more details, see the last section.
 
 <br>

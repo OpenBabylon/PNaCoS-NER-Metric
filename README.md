@@ -8,6 +8,8 @@ The default metric is set up for <b>Ukrainian</b>. To set it up for your languag
 
 ## Run via Docker
 
+Download the model from the [ArabicNER-Wojood](https://www.google.com/url?q=https%3A%2F%2Fdrive.google.com%2Fdrive%2Ffolders%2F1SIDdls-BSHiDKa5xSL4UW5rDnkeZvrUv%3Fusp%3Dsharing) and unpack it in the root.
+
 Run the following:
 ```commandline
 docker compose up --build
@@ -20,7 +22,8 @@ By default, 8008 port will be used
     ```commandline
    pip install -r requirements.txt
    ```
-2. Run [app.py](app.py): 
+2. Download the model from the [ArabicNER-Wojood](https://www.google.com/url?q=https%3A%2F%2Fdrive.google.com%2Fdrive%2Ffolders%2F1SIDdls-BSHiDKa5xSL4UW5rDnkeZvrUv%3Fusp%3Dsharing) and unpack it in the root.
+3Run [app.py](app.py): 
 ```commandline
 python app.py
 ```

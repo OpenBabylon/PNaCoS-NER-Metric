@@ -17,4 +17,7 @@ COPY math_symbols.txt /workdir/math_symbols.txt
 
 RUN python -m spacy download xx_sent_ud_sm
 
+COPY arabiner/ /workdir/arabiner/
+COPY ArabicNER-Wojood/ArabicNER-Wojood/ /workdir/ArabicNER-Wojood/
+
 ENTRYPOINT uvicorn app:app --host 0.0.0.0 --port 8008 --reload

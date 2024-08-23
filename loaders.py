@@ -64,7 +64,13 @@ def load_metric() -> CodeSwitchingNERMetric:
             pattern=r'[⁰¹²³⁴⁵⁶⁷⁸⁹]',
             labelname="MathPower"
         ),
-        SpacyNER()
+        ArabicWojoodNER(
+            modelpath="ArabicNER-Wojood/"
+        ),
+        RegexFinder(
+            pattern="^#[\w]+",
+            labelname="Hashtag"
+        )
     ]
 
     sentence_ner = StanzaNER(ppl_lang="ar")

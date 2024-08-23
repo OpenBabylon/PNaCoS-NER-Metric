@@ -6,7 +6,7 @@ import re
 from nltk.tokenize import sent_tokenize
 from flair.models import SequenceTagger
 from flair.data import Sentence
-
+from arabiner.utils.ent_morph import WojoodNER
 
 from typing import List, Union, Dict, Tuple
 
@@ -361,6 +361,9 @@ class InclusionSymbols(BaseNER):
             preds.append(sent_preds)
 
         return preds
+
+
+
 class CorpusCommonTokensFinder(BaseNER):
     def __init__(self, comon_tokens_list: List[str]):
         self.comon_tokens_list = comon_tokens_list
@@ -386,7 +389,66 @@ class CorpusCommonTokensFinder(BaseNER):
 
         return preds
 
+class ArabicWojoodNER(BaseNER):
+    def __init__(self, modelpath):
+        self.wojoodTagger = WojoodNER(modelpath)
+
+    def split_text_with_indices(self, text):
+        # Split the text into words
+        words = text.split()
+
+        # Initialize the start index
+        current_position = 0
+
+        # Create a list to hold the results
+        result = []
+
+        # Iterate through the words and determine their start and end indices
+        for word in words:
+            # Find the start index of the word in the original text starting from current_position
+            start_index = text.find(word, current_position)
+
+            # Calculate the end index of the word
+            end_index = start_index + len(word) - 1
+
+            # Append the word with its start and end indices to the result list
+            result.append((word, start_index, end_index))
+
+            # Update the current_position to the character just after the end of the current word
+            current_position = end_index + 1
+
+        return result
+
+    def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
+        output = [
+            [] for _ in sentences
+        ]
+
+        for i, (sentence, sentence_idx_range) in enumerate(zip(sentences, sentences_ranges)):
+            text_list, entity_morphed_list = self.wojoodTagger.get_ner_labels(text=sentence)
+
+            split_sent_idx = self.split_text_with_indices(text=sentence)
+            for (word, word_start_idx, word_end_idx), ent in zip(split_sent_idx, entity_morphed_list):
+                if ent.labels:
+                    output[i].append(
+                        {
+                            "text": ent.text,
+                            "label": "|".join(ent.labels),
+                            "start_in_sentence":word_start_idx ,
+                            "end_in_sentence": word_end_idx,
+                            "start": word_start_idx + sentence_idx_range["start"],
+                            "end": word_end_idx + sentence_idx_range["start"],
+                        }
+                    )
+        return output
+
+
+
 
 if __name__ == '__main__':
-    fl = FlairNER("stefan-it/autotrain-flair-georgian-ner-xlm_r_large-bs4-e10-lr5e-06-1")
-    fl(["გიორგი მარგველაშვილი იმყოფებოდა ბათუმში საერთაშორისო კონფერენციაზე."], [0])
+
+    wojoodTagger = WojoodNER('ArabicNER-Wojood/ArabicNER-Wojood/')
+    text_list , entity_morphed_list = wojoodTagger.get_ner_labels()
+
+    print(text_list)
+    print(entity_morphed_list)

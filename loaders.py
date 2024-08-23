@@ -56,6 +56,10 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern=r'[⁰¹²³⁴⁵⁶⁷⁸⁹]',
             labelname="MathPower"
+        ),
+        RegexFinder(
+            pattern="^#[\w]+",
+            labelname="Hashtag"
         )
     ]
     sentence_ner = StanzaNER(

@@ -15,6 +15,6 @@ COPY georgian_parsed_foreign_words.json /workdir/georgian_parsed_foreign_words.j
 COPY FDA-parsed-additives.json /workdir/FDA-parsed-additives.json
 COPY math_symbols.txt /workdir/math_symbols.txt
 
-RUN python -m spacy download xx_sent_ud_sm
+RUN python -m spacy download xx_sent_ud_sm && python -c "import nltk; nltk.download('punkt')"
 
 ENTRYPOINT uvicorn app:app --host 0.0.0.0 --port 8008 --reload

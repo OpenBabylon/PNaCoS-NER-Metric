@@ -25,6 +25,14 @@ def load_metric() -> CodeSwitchingNERMetric:
     fileformats_extensions_pattern = "|".join([re.escape(ext) for ext in fileformats])
     fileformats_regex_pattern = r'\b\w+\.(?:' + fileformats_extensions_pattern + r')\b'
 
+    def generate_web_domain_regex():
+        extensions = open("web_extentions.txt", "r").read().split("\n")
+        extensions = [x for x in extensions if x]
+
+        # Escape the dots in each extension and join them with `|` (OR operator)
+        escaped_extensions = [re.escape(ext) for ext in extensions]
+        regex_pattern = r'\b[\w.-]+(?:' + '|'.join(escaped_extensions) + r')\b'
+        return regex_pattern
 
 
     ner_modules = [
@@ -86,6 +94,10 @@ def load_metric() -> CodeSwitchingNERMetric:
             comon_tokens_list=fileformats + [
                 "." + fileformat_name for fileformat_name in fileformats
             ]
+        ),
+        RegexFinder(
+            pattern=generate_web_domain_regex(),
+            labelname="Website"
         )
     ]
     sentence_ner = StanzaNER(

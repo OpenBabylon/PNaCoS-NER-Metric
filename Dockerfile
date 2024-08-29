@@ -15,5 +15,6 @@ COPY FDA-parsed-additives.json /workdir/FDA-parsed-additives.json
 COPY math_symbols.txt /workdir/math_symbols.txt
 COPY coding_names.txt /workdir/coding_names.txt
 COPY formats.txt /workdir/formats.txt
+COPY web_extentions.txt /workdir/web_extentions.txt
 
 ENTRYPOINT uvicorn app:app --host 0.0.0.0 --port 8008 --reload

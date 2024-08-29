@@ -205,6 +205,7 @@ if __name__ == '__main__':
     test_texts = [
         """ кодировке UTF-8
 2017 у кіно
+детальніше: qeiwj-wefwe-ewfw-12312-12313--not-a-scam-100-percent.ru
 Фільми США 2017 а також її зюерегли у efpmwlfempw.pdf файлі. Формат pdf PDF png PNG Шикарний pn ihde sbivy sdbivcy"""
     ]
 

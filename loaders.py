@@ -16,6 +16,17 @@ def load_metric() -> CodeSwitchingNERMetric:
      a candidate for a code switching
     """
 
+    coding_names = open("coding_names.txt", "r").read().split("\n")
+    coding_names = [x.strip().lower() for x in coding_names if x.strip()]
+
+    fileformats = open("formats.txt", "r").read().split("\n")
+    fileformats = [x.lower() for x in fileformats if x]
+    fileformats = [x[1:] if x.startswith(".") else x for x in fileformats if x]
+    fileformats_extensions_pattern = "|".join([re.escape(ext) for ext in fileformats])
+    fileformats_regex_pattern = r'\b\w+\.(?:' + fileformats_extensions_pattern + r')\b'
+
+
+
     ner_modules = [
         TransformersNER(
             consider_labels=["MISC", "PER", "ORG", "LOC"],
@@ -60,6 +71,21 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern="^#[\w]+",
             labelname="Hashtag"
+        ),
+        RegexFinder(
+            pattern="|".join(coding_names),
+            labelname="Coding",
+            do_lowercase=True
+        ),
+        RegexFinder(
+            pattern=fileformats_regex_pattern,
+            labelname="FileName",
+            do_lowercase=True
+        ),
+        CorpusCommonTokensFinder(
+            comon_tokens_list=fileformats + [
+                "." + fileformat_name for fileformat_name in fileformats
+            ]
         )
     ]
     sentence_ner = StanzaNER(

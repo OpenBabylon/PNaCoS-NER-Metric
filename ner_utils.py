@@ -162,9 +162,10 @@ class StanzaNER(BaseNER):
 
 
 class RegexFinder:
-    def __init__(self, pattern: str, labelname: str):
+    def __init__(self, pattern: str, labelname: str, do_lowercase=False):
         self.pattern = pattern
         self.labelname = labelname
+        self.do_lowercase = do_lowercase
 
     def __call__(self, sentences: List[str],  sentences_ranges: List[Dict[str, int]], **kwargs) -> List[List[Dict[str, Union[int, str]]]]:
         output = [
@@ -172,9 +173,12 @@ class RegexFinder:
         ]
 
         for i, (sentence, sentence_idx_range) in enumerate(zip(sentences, sentences_ranges)):
+            sentence_to_match = sentence
+            if self.do_lowercase:
+                sentence_to_match = sentence_to_match.lower()
             matches = [
                 (match.group(), match.start(), match.end()) for match in
-                re.finditer(self.pattern, sentence) if match.group()]
+                re.finditer(self.pattern, sentence_to_match) if match.group()]
 
             for match_text, match_start, match_end in matches:
                 output[i] += [

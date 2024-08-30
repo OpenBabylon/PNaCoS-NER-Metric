@@ -34,6 +34,9 @@ def load_metric() -> CodeSwitchingNERMetric:
         regex_pattern = r'\b[\w.-]+(?:' + '|'.join(escaped_extensions) + r')\b'
         return regex_pattern
 
+    latin_phrases_regex = "|".join(
+        [s.lower() for s in open("latin.txt", "r").read().split("\n") if s]
+    )
 
     ner_modules = [
         TransformersNER(
@@ -98,6 +101,11 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern=generate_web_domain_regex(),
             labelname="Website"
+        ),
+        RegexFinder(
+            pattern=latin_phrases_regex,
+            labelname="Latin",
+            do_lowercase=True
         )
     ]
     sentence_ner = StanzaNER(

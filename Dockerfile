@@ -14,6 +14,9 @@ COPY ukr_corpus_words.json /workdir/ukr_corpus_words.json
 COPY georgian_parsed_foreign_words.json /workdir/georgian_parsed_foreign_words.json
 COPY FDA-parsed-additives.json /workdir/FDA-parsed-additives.json
 COPY math_symbols.txt /workdir/math_symbols.txt
+COPY coding_names.txt /workdir/coding_names.txt
+COPY formats.txt /workdir/formats.txt
+COPY web_extentions.txt /workdir/web_extentions.txt
 
 RUN python -m spacy download xx_sent_ud_sm
 

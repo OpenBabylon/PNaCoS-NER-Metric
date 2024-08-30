@@ -16,6 +16,24 @@ def load_metric() -> CodeSwitchingNERMetric:
      a candidate for a code switching
     """
 
+    coding_names = open("coding_names.txt", "r").read().split("\n")
+    coding_names = [x.strip().lower() for x in coding_names if x.strip()]
+
+    fileformats = open("formats.txt", "r").read().split("\n")
+    fileformats = [x.lower() for x in fileformats if x]
+    fileformats = [x[1:] if x.startswith(".") else x for x in fileformats if x]
+    fileformats_extensions_pattern = "|".join([re.escape(ext) for ext in fileformats])
+    fileformats_regex_pattern = r'\b\w+\.(?:' + fileformats_extensions_pattern + r')\b'
+
+    def generate_web_domain_regex():
+        extensions = open("web_extentions.txt", "r").read().split("\n")
+        extensions = [x for x in extensions if x]
+
+        # Escape the dots in each extension and join them with `|` (OR operator)
+        escaped_extensions = [re.escape(ext) for ext in extensions]
+        regex_pattern = r'\b[\w.-]+(?:' + '|'.join(escaped_extensions) + r')\b'
+        return regex_pattern
+
     ner_modules = [
         FlairNER(
             consider_labels=["MISC", "PER", "ORG", "LOC"],
@@ -70,6 +88,25 @@ def load_metric() -> CodeSwitchingNERMetric:
         RegexFinder(
             pattern="^#[\w]+",
             labelname="Hashtag"
+        ),
+        RegexFinder(
+            pattern="|".join(coding_names),
+            labelname="Coding",
+            do_lowercase=True
+        ),
+        RegexFinder(
+            pattern=fileformats_regex_pattern,
+            labelname="FileName",
+            do_lowercase=True
+        ),
+        CorpusCommonTokensFinder(
+            comon_tokens_list=fileformats + [
+                "." + fileformat_name for fileformat_name in fileformats
+            ]
+        ),
+        RegexFinder(
+            pattern=generate_web_domain_regex(),
+            labelname="Website"
         )
     ]
 

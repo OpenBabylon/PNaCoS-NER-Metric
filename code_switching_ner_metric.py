@@ -204,10 +204,12 @@ if __name__ == '__main__':
     from pprint import pprint
 
     test_texts = [
-        """أمه، ومن ثمّ رُضعت بمقابل المال.
-المعنى اللغوي: الرضاعة في الأصل تعني الإطعام والتربية، كما أنها تعني النسب إلى المرأة بالإطعام. ويستخدم المصطلح للإشارة إلى الحالة التي يولد عندها الطفل ليكون قادراً على إطعام نفسه.
-في التاريخ القديم
-كانت هناك ممارسات مختلفة لرعاية الأطفال ~"""
+       """معاصرة
+
+A New York Times article published on Tuesday, January 27th entitled "The Revisionist History of the Arab Spring" by David Kirkpatrick begins with a quote from President Obama in Cairo:
+"We meet at a time of tension between the United States and Muslims around the world — tension rooted in historical forces that go beyond any current policy debate. The relationship between Islam and the West includes centuries of co-existence and cooperation, but also conflict and religious wars."
+Kirkpatrick goes on to say that this speech was considered revolutionary for many reasons, including its attempt to connect US foreign policy with the history of European colonialism, which he claims had not been done before by an American president. He quotes historian Charles Dellheim as saying: "There are no other examples of such direct and extensive engagement with Western imperialism and its role in shaping modern Islamic societies, especially in Africa and Asia."
+He then proceeds to critique two recently released books about Egypt's recent uprising against Mubarak – one written by a former diplomat, Robert Danin; the second by Hisham Kassem (an Egyptian businessman). While both authors have been praised for their"""
     ]
 
     metric = load_metric()

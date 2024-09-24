@@ -246,11 +246,11 @@ class StanzaNER(BaseNER):
             doc = self.nlp(sentence)
             preds.append([
                 {
-                    "text": ent_dict["text"],
-                    "label": ent_dict["type"],
-                    "start": ent_dict["start_char"],
-                    "end": ent_dict["end_char"],
-                } for ent_dict in doc.ents if ent_dict["type"] in self.consider_labels
+                    "text": ent_dict.text,
+                    "label": ent_dict.type,
+                    "start": ent_dict.start_char,
+                    "end": ent_dict.end_char,
+                } for ent_dict in doc.ents if ent_dict.type in self.consider_labels
             ]
             )
 

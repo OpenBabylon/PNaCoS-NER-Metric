@@ -39,6 +39,7 @@ def load_metric() -> CodeSwitchingNERMetric:
             consider_labels=["MISC", "PER", "ORG", "LOC"],
             modelname="megantosh/flair-arabic-multi-ner"
         ),
+        StanzaNER(ppl_lang="ar"),
         TransformersNER(
             modelname="ychenNLP/arabic-ner-ace",
             consider_labels=[
@@ -110,7 +111,9 @@ def load_metric() -> CodeSwitchingNERMetric:
         )
     ]
 
-    sentence_ner = StanzaNER(ppl_lang="ar")
+    # sentence_ner = StanzaNER(ppl_lang="ar")
+
+    sentence_ner = SpacyNER(modelname='xx_sent_ud_sm')
 
     arabic_alphabet = "ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي ء".replace(" ", "")
     arabic_letters = [

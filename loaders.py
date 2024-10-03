@@ -62,11 +62,11 @@ def load_metric() -> CodeSwitchingNERMetric:
             pattern=r'\b(?:M{0,4})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:IX|IV|V?I{0,3})\b',
             labelname='RomanInteger'
         ),
-        CorpusCommonTokensFinder(
-            comon_tokens_list=json.load(
-                open("ukr_corpus_words.json", "r")
-            )
-        ),
+        # CorpusCommonTokensFinder(
+        #     comon_tokens_list=json.load(
+        #         open("ukr_corpus_words.json", "r")
+        #     )
+        # ),
         CorpusCommonTokensFinder(
             comon_tokens_list=json.load(
                 open("FDA-parsed-additives.json", "r")

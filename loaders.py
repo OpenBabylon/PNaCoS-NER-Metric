@@ -117,7 +117,7 @@ def load_metric() -> CodeSwitchingNERMetric:
     )
 
     metric = CodeSwitchingNERMetric(
-        origin_alphabet="АаБбВвГгҐґДдЕеЄєЖжЗзИиІіЇїЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщьЮюЯя",
+        origin_alphabet="АаБбВвГгҐґДдЕеЄєЖжЗзИиІіЇїЙйКкЛлМмНнОоПпСсТтРрУуХхФфЦцЧчШшЩщьЮюЯя",
         ner_modules=ner_modules,
         sentence_ner=sentence_ner
     )
